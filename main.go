@@ -1,0 +1,107 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
+)
+
+func lazyApproveOrigin(r *http.Request) bool { return true }
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin:     lazyApproveOrigin,
+}
+
+var incoming = make(chan Packet)
+var ticker = time.NewTicker(100 * time.Millisecond)
+var gamestate = Gamestate{}
+
+func main() {
+	fmt.Println("Starting Server")
+
+	go gameLoop()
+	go http.HandleFunc("/", socketHandler)
+	go log.Fatal(http.ListenAndServe("localhost:8000", nil))
+}
+
+func gameLoop() {
+	for {
+		select {
+		case iPacket := <-incoming:
+			switch iPacket.header {
+			case "MOVEMENT":
+				gamestate.updatePlayerPositions(iPacket)
+			case "DISCONNECT":
+				gamestate.removePlayerFromList(iPacket)
+				gamestate.sendPlayerDisconnects(iPacket) //a sender, not a state modifier, but no racecons...
+			default:
+				fmt.Println("Couldn't Switchboard Packet!", iPacket)
+			}
+		case tic := <-ticker.C:
+			gamestate.sendPlayerPositions(tic)
+		}
+	}
+}
+
+func socketHandler(w http.ResponseWriter, r *http.Request) {
+	// Upgrade Connection
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer conn.Close()
+
+	//Get Player and User Information from API (SIMULATED)
+	time.Sleep(50 * time.Millisecond)
+
+	fmt.Println("New Connection")
+	var uuid = uuid.New().String()
+
+	err = conn.WriteMessage(1, []byte("SPAWN|"+uuid+"|Matthew|0,2,0"))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// PROCESS MESSAGES
+	for {
+		var retPack = Packet{}
+
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			//HANDLE INVALID MESSAGES WITH DISCONNECTION PACKET
+			fmt.Println("Client Disconnect")
+			retPack.uuid = uuid
+			retPack.header = "DISCONNECT"
+			incoming <- retPack
+			return
+		}
+
+		//SWITCHBOARD
+		var msgArray = strings.Split(string(msg), "|")
+		var coordinateArray = strings.Split(msgArray[2], ",")
+		switch msgArray[0] {
+		case "MOVEMENT":
+			retPack.uuid = uuid
+			retPack.header = "MOVEMENT"
+			retPack.source = *conn
+			retPack.x, _ = strconv.ParseFloat(coordinateArray[0], 64)
+			retPack.y, _ = strconv.ParseFloat(coordinateArray[1], 64)
+			retPack.z, _ = strconv.ParseFloat(coordinateArray[2], 64)
+			retPack.rotY, _ = strconv.ParseFloat(coordinateArray[3], 64)
+			break
+		}
+
+		//SEND
+		incoming <- retPack
+	}
+}
