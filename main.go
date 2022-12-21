@@ -32,6 +32,7 @@ func main() {
 }
 
 func gameLoop() {
+	//var timeLastSent = time.Now()
 	for {
 		select {
 		case iPacket := <-incoming:
@@ -47,6 +48,8 @@ func gameLoop() {
 				fmt.Println("Couldn't Switchboard Packet!", iPacket)
 			}
 		case tic := <-ticker.C:
+			//fmt.Println(time.Since(timeLastSent))
+			//timeLastSent = time.Now()
 			gamestate.sendPlayerPositions(tic)
 		}
 	}
