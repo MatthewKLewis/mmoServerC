@@ -26,7 +26,6 @@ var gamestate = Gamestate{}
 
 func main() {
 	fmt.Println("Starting Server")
-
 	go gameLoop()
 	go http.HandleFunc("/", socketHandler)
 	go log.Fatal(http.ListenAndServe("localhost:8000", nil))
@@ -39,9 +38,11 @@ func gameLoop() {
 			switch iPacket.header {
 			case "MOVEMENT":
 				gamestate.updatePlayerPositions(iPacket)
+			case "ATTACK":
+				gamestate.resolveAttack(iPacket)
 			case "DISCONNECT":
 				gamestate.removePlayerFromList(iPacket)
-				gamestate.sendPlayerDisconnects(iPacket) //a sender, not a state modifier, but no racecons...
+				gamestate.sendPlayerDisconnect(iPacket) //a sender, not a state modifier, but no racecons...
 			default:
 				fmt.Println("Couldn't Switchboard Packet!", iPacket)
 			}
@@ -93,6 +94,15 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 		case "MOVEMENT":
 			retPack.uuid = uuid
 			retPack.header = "MOVEMENT"
+			retPack.source = *conn
+			retPack.x, _ = strconv.ParseFloat(coordinateArray[0], 64)
+			retPack.y, _ = strconv.ParseFloat(coordinateArray[1], 64)
+			retPack.z, _ = strconv.ParseFloat(coordinateArray[2], 64)
+			retPack.rotY, _ = strconv.ParseFloat(coordinateArray[3], 64)
+			break
+		case "ATTACK":
+			retPack.uuid = uuid
+			retPack.header = "ATTACK"
 			retPack.source = *conn
 			retPack.x, _ = strconv.ParseFloat(coordinateArray[0], 64)
 			retPack.y, _ = strconv.ParseFloat(coordinateArray[1], 64)

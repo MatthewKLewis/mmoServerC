@@ -36,6 +36,10 @@ func (gS *Gamestate) updatePlayerPositions(p Packet) {
 	}
 }
 
+func (gS *Gamestate) resolveAttack(p Packet) {
+	fmt.Println("atkk")
+}
+
 func (gS *Gamestate) removePlayerFromList(p Packet) {
 	fmt.Println("Removing from List")
 	var index = -1
@@ -61,7 +65,7 @@ func (gS *Gamestate) sendPlayerPositions(time time.Time) {
 	}
 }
 
-func (gS *Gamestate) sendPlayerDisconnects(p Packet) {
+func (gS *Gamestate) sendPlayerDisconnect(p Packet) {
 	fmt.Println("Sending Disconnect Packet to Remaining Players")
 	for i := 0; i < len(gS.players); i++ {
 		gS.players[i].socket.WriteMessage(1, p.serialize())
