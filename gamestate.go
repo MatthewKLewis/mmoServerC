@@ -12,7 +12,6 @@ type Gamestate struct {
 
 // STATE MODIFYING
 func (gS *Gamestate) updatePlayerPositions(p Packet) {
-	//fmt.Println(p.x)
 	var found = false
 	for i := 0; i < len(gS.players); i++ {
 		if gS.players[i].uuid == p.uuid {

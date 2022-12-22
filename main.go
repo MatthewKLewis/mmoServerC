@@ -70,7 +70,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("New Connection")
 	var uuid = uuid.New().String()
 
-	err = conn.WriteMessage(1, []byte("SPAWN|"+uuid+"|Matthew|0,2,0"))
+	err = conn.WriteMessage(1, []byte("SPAWN|"+uuid+"|Matthew|0,52,0,0"))
 	if err != nil {
 		fmt.Println(err)
 		return

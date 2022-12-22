@@ -17,5 +17,5 @@ type Packet struct {
 }
 
 func (p *Packet) serialize() []byte {
-	return []byte(p.header + "|" + fmt.Sprint(p.uuid) + "|" + fmt.Sprint(p.x) + "," + fmt.Sprint(p.y) + "," + fmt.Sprint(p.z) + "," + fmt.Sprint(p.rotY))
+	return []byte(p.header + "|" + fmt.Sprint(p.uuid) + "|" + "Matthew!" + "|" + fmt.Sprint(p.x) + "," + fmt.Sprint(p.y) + "," + fmt.Sprint(p.z) + "," + fmt.Sprint(p.rotY))
 }
