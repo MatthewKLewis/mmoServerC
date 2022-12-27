@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -25,10 +26,14 @@ var ticker = time.NewTicker(100 * time.Millisecond)
 var gamestate = Gamestate{}
 
 const host = "0.0.0.0"
-const port = "8000"
 
 func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
 	fmt.Println("Starting Server")
+	fmt.Println("Port:", port)
 	go gameLoop()
 	go http.HandleFunc("/", socketHandler)
 	go log.Fatal(http.ListenAndServe(host+":"+port, nil))
