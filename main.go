@@ -44,6 +44,8 @@ func gameLoop() {
 			case "DISCONNECT":
 				gamestate.removePlayerFromList(iPacket)
 				gamestate.sendPlayerDisconnect(iPacket) //a sender, not a state modifier, but no racecons...
+			case "CHAT":
+				gamestate.sendPlayerChat(iPacket) //another sender.
 			default:
 				fmt.Println("Couldn't Switchboard Packet!", iPacket)
 			}
@@ -70,7 +72,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("New Connection")
 	var uuid = uuid.New().String()
 
-	err = conn.WriteMessage(1, []byte("SPAWN|"+uuid+"|Matthew|0,52,0,0"))
+	err = conn.WriteMessage(1, []byte("SPAWN|"+uuid+"|Matthew|0,5,0,0"))
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -111,6 +113,15 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 			retPack.y, _ = strconv.ParseFloat(coordinateArray[1], 64)
 			retPack.z, _ = strconv.ParseFloat(coordinateArray[2], 64)
 			retPack.rotY, _ = strconv.ParseFloat(coordinateArray[3], 64)
+			break
+		case "CHAT":
+			retPack.uuid = uuid
+			retPack.header = "CHAT"
+			retPack.source = *conn
+			retPack.x, _ = strconv.ParseFloat(coordinateArray[0], 64)
+			retPack.y, _ = strconv.ParseFloat(coordinateArray[1], 64)
+			retPack.z, _ = strconv.ParseFloat(coordinateArray[2], 64)
+			retPack.other = "Hello World!"
 			break
 		}
 

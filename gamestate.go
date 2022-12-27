@@ -64,7 +64,15 @@ func (gS *Gamestate) sendPlayerPositions(time time.Time) {
 		}
 	}
 }
-
+func (gS *Gamestate) sendPlayerChat(p Packet) {
+	for i := 0; i < len(gS.players); i++ {
+		for j := 0; j < len(gS.players); j++ {
+			if gS.players[i].uuid != gS.players[j].uuid {
+				gS.players[i].socket.WriteMessage(1, p.serialize())
+			}
+		}
+	}
+}
 func (gS *Gamestate) sendPlayerDisconnect(p Packet) {
 	fmt.Println("Sending Disconnect Packet to Remaining Players")
 	for i := 0; i < len(gS.players); i++ {

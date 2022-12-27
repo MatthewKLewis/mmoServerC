@@ -14,6 +14,7 @@ type Packet struct {
 	y      float64
 	z      float64
 	rotY   float64
+	other  string
 }
 
 func (p *Packet) serialize() []byte {
