@@ -24,11 +24,14 @@ var incoming = make(chan Packet)
 var ticker = time.NewTicker(100 * time.Millisecond)
 var gamestate = Gamestate{}
 
+const host = "0.0.0.0"
+const port = "8000"
+
 func main() {
 	fmt.Println("Starting Server")
 	go gameLoop()
 	go http.HandleFunc("/", socketHandler)
-	go log.Fatal(http.ListenAndServe("localhost:8000", nil))
+	go log.Fatal(http.ListenAndServe(host+":"+port, nil))
 }
 
 func gameLoop() {
